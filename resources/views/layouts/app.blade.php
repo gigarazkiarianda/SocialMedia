@@ -10,6 +10,10 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="{{ route('dashboard') }}">Dashboard</a>
         <div class="collapse navbar-collapse" id="navbarNav">
+            <form class="form-inline my-2 my-lg-0 ml-auto" method="GET" action="{{ route('user.search') }}">
+                <input class="form-control mr-sm-2" type="search" name="query" placeholder="Search users" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
             <ul class="navbar-nav ml-auto">
                 @auth
                     <li class="nav-item">

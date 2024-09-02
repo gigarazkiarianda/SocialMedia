@@ -70,8 +70,7 @@ class DashboardController extends Controller
      */
     public function edit($id)
     {
-        $biodata = Biodata::findOrFail($id);
-
+        $biodata = Biodata::where('user_id', Auth::id())->findOrFail($id);
         return view('biodata.edit', compact('biodata'));
     }
 
@@ -91,7 +90,7 @@ class DashboardController extends Controller
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $biodata = Biodata::findOrFail($id);
+        $biodata = Biodata::where('user_id', Auth::id())->findOrFail($id);
         $biodata->full_name = $request->input('full_name');
         $biodata->birth_date = $request->input('birth_date');
         $biodata->birth_place = $request->input('birth_place');
@@ -104,6 +103,6 @@ class DashboardController extends Controller
 
         $biodata->save();
 
-        return redirect()->route('dashboard')->with('success', 'Biodata has been updated successfully.');
+        return redirect()->route('dashboard')->with('success', 'Biodata updated successfully.');
     }
 }

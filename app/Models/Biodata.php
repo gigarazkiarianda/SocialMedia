@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Biodata extends Model
 {
-    use HasFactory;
+    // Specify the table name if it does not follow Laravel's convention
+    protected $table = 'biodatas';
 
-    protected $table = 'biodata';
+    // Fillable fields
+    protected $fillable = [
+        'user_id', 'full_name', 'birth_date', 'birth_place', 'photo'
+    ];
 
-    protected $fillable = ['user_id', 'full_name', 'birth_date', 'birth_place', 'photo'];
-
+    // Define the relationship with User
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateBiodataTable extends Migration
+class CreateBiodatasTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateBiodataTable extends Migration
      */
     public function up()
     {
-        Schema::create('biodata', function (Blueprint $table) {
+        Schema::create('biodatas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('full_name');
@@ -31,6 +31,6 @@ class CreateBiodataTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('biodata');
+        Schema::dropIfExists('biodatas');
     }
 }
