@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BiodataController;
+use App\Http\Controllers\DashboardController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -15,26 +16,16 @@ use App\Http\Controllers\BiodataController;
 |
 */
 
-// Route untuk halaman beranda
-Route::get('/', function () {
-    return view('welcome');
-});
-
-// Route untuk halaman login
-Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
-
-// Proses login
+Route::get('login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
-
-// Route untuk halaman register
-Route::get('register', [AuthController::class, 'showRegisterForm'])->name('register');
-
-// Proses register
+Route::get('register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('register', [AuthController::class, 'register']);
-
-// Proses logout
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
-// Route untuk dashboard
-Route::get('dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
-
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/biodata/create', [DashboardController::class, 'create'])->name('biodata.create');
+    Route::post('/biodata', [DashboardController::class, 'store'])->name('biodata.store');
+    Route::get('/biodata/{id}/edit', [DashboardController::class, 'edit'])->name('biodata.edit');
+    Route::put('/biodata/{id}', [DashboardController::class, 'update'])->name('biodata.update');
+});

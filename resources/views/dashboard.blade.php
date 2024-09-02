@@ -1,49 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .bg-custom {
-            background-color: #f8f9fa; /* Light gray background */
-        }
-        .card-header-custom {
-            background-color: #007bff; /* Bootstrap primary color */
-            color: white;
-        }
-        .btn-custom {
-            background-color: #28a745; /* Bootstrap success color */
-            color: white;
-        }
-        .btn-custom:hover {
-            background-color: #218838; /* Darker green on hover */
-        }
-    </style>
-</head>
-<body>
-    <div class="container mt-4">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="card bg-custom shadow-sm">
-                    <div class="card-header card-header-custom">
-                        <h1 class="mb-0 text-center">Welcome, {{ Session::get('user')->name }}!</h1>
-                    </div>
-                    <div class="card-body">
-                        <!-- Logout Form -->
-                        <form method="POST" action="{{ route('logout') }}" class="text-center">
-                            @csrf
-                            <button type="submit" class="btn btn-custom">Logout</button>
-                        </form>
-                    </div>
-                </div>
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+
+    <!-- Display username -->
+    <h3>Welcome, {{ Auth::user()->name }}!</h3>
+
+    @if($biodata)
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4 class="card-title">{{ $biodata->full_name }}</h4>
+                <p class="card-text"><strong>Birth Date:</strong> {{ $biodata->birth_date }}</p>
+                <p class="card-text"><strong>Birth Place:</strong> {{ $biodata->birth_place }}</p>
+                @if($biodata->photo)
+                    <p><img src="{{ asset('storage/' . $biodata->photo) }}" alt="Photo" width="150"></p>
+                @else
+                    <p>No photo available.</p>
+                @endif
+                <a href="{{ route('biodata.edit', $biodata->id) }}" class="btn btn-primary">Edit Biodata</a>
             </div>
         </div>
-    </div>
-
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    @else
+        <p>No biodata available. <a href="{{ route('biodata.create') }}">Create now</a>.</p>
+    @endif
+</div>
+@endsection

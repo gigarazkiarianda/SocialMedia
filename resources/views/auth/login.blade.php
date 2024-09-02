@@ -1,20 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Login</title>
-</head>
-<body>
-    <h1>Login</h1>
-    <form method="POST" action="{{ url('login') }}">
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <form method="POST" action="{{ route('login') }}">
         @csrf
-        <label for="email">Email:</label>
-        <input type="email" name="email" id="email" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" name="password" id="password" required>
-        <br>
-        <button type="submit">Login</button>
+        <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+
+        <!-- Tambahkan tombol Register di bawah tombol Login -->
+        <div class="mt-3">
+            <a href="{{ route('register') }}" class="btn btn-secondary">Register</a>
+        </div>
     </form>
-    <a href="{{ route('register') }}">Register</a>
-</body>
-</html>
+</div>
+@endsection
