@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FollowController;
+use App\Http\Controllers\NotificationController;
 
 
 
@@ -42,7 +43,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/user/{id}', [UserController::class, 'profile'])->name('user.profile');
     Route::get('/my-profile', [UserController::class, 'myProfile'])->name('user.myprofile');
     Route::post('/follow/{id}', [UserController::class, 'follow'])->name('user.follow');
-Route::post('/unfollow/{id}', [UserController::class, 'unfollow'])->name('user.unfollow');
+    Route::post('/unfollow/{id}', [UserController::class, 'unfollow'])->name('user.unfollow');
+    Route::get('/followers', [UserController::class, 'followers'])->name('user.followers');
+    Route::get('/following', [UserController::class, 'following'])->name('user.following');
 
+    Route::post('/follow/{id}', [UserController::class, 'follow'])->name('user.follow');
+    Route::get('/user/{id}/followers', [UserController::class, 'followers'])->name('user.followers');
+    Route::get('/user/{id}/following', [UserController::class, 'following'])->name('user.following');
 
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+Route::post('/follow', [NotificationController::class, 'follow'])->name('notifications.follow');
+Route::post('/unfollow', [NotificationController::class, 'unfollow'])->name('notifications.unfollow');
 });
+
+
+
+

@@ -34,4 +34,9 @@ public function followers()
 {
     return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id');
 }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
 }

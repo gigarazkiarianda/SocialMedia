@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\UserFollowed;
+
 
 class UserController extends Controller
 {
@@ -44,12 +46,22 @@ class UserController extends Controller
         return view('user.myprofile', compact('user', 'biodata'));
     }
 
-    public function follow($id)
+    public function follow($userId)
     {
-        $user = User::findOrFail($id);
+        $userToFollow = User::findOrFail($userId);
+        $currentUser = auth()->user();
 
-        // Attach the followed user to the authenticated user's following list
-        Auth::user()->following()->toggle($user->id);
+        if (!$currentUser->following->contains($userToFollow)) {
+            $currentUser->following()->attach($userId);
+
+            // Send a notification to the user being followed
+            $userToFollow->notify(new UserFollowed($currentUser, 'follow'));
+
+            // Optionally, send a notification to the current user if they are followed back
+            if ($userToFollow->following->contains($currentUser)) {
+                $currentUser->notify(new UserFollowed($userToFollow, 'follow_back'));
+            }
+        }
 
         return redirect()->back();
     }
@@ -58,7 +70,7 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Detach the followed user from the authenticated user's following list
+
         Auth::user()->following()->detach($user->id);
 
         return redirect()->back();
@@ -67,10 +79,29 @@ class UserController extends Controller
     public function dashboard()
     {
         $user = Auth::user();
-        // Fetch users that the logged-in user is following
+       
         $followingUsers = $user->following;
 
         return view('dashboard', compact('user', 'followingUsers'));
     }
 
+    public function followers($id)
+    {
+        $user = User::findOrFail($id);
+        $followers = $user->followers;
+        return view('user.followers', compact('user', 'followers'));
+    }
+
+    public function following($id)
+    {
+        $user = User::findOrFail($id);
+        $following = $user->following;
+        return view('user.following', compact('user', 'following'));
+    }
+
+    public function notifications()
+    {
+        $notifications = Auth::user()->notifications()->latest()->get();
+        return view('user.notifications', compact('notifications'));
+    }
 }
