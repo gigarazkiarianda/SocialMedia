@@ -3,25 +3,45 @@
 @section('content')
 <div class="container">
 
-    <!-- Display username -->
-    <h3>Welcome, {{ Auth::user()->name }}!</h3>
+    <!-- Display welcome message -->
+    <div class="d-flex align-items-center mb-4">
+        @if(Auth::user()->biodata && Auth::user()->biodata->photo)
+            <img src="{{ asset('storage/' . Auth::user()->biodata->photo) }}" alt="Profile Photo" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+        @else
+            <img src="https://via.placeholder.com/150" alt="Default Photo" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+        @endif
 
-    @if($biodata)
-        <div class="card mb-3">
-            <div class="card-body">
-                <h4 class="card-title">{{ $biodata->full_name }}</h4>
-                <p class="card-text"><strong>Birth Date:</strong> {{ $biodata->birth_date }}</p>
-                <p class="card-text"><strong>Birth Place:</strong> {{ $biodata->birth_place }}</p>
-                @if($biodata->photo)
-                    <p><img src="{{ asset('storage/' . $biodata->photo) }}" alt="Photo" width="150"></p>
-                @else
-                    <p>No photo available.</p>
-                @endif
-                <a href="{{ route('biodata.edit', $biodata->id) }}" class="btn btn-primary">Edit Biodata</a>
-            </div>
+        <div class="ml-4">
+            <h1>Welcome, {{ Auth::user()->name }}!</h1>
+            <p><strong>Email:</strong> {{ Auth::user()->email }}</p>
+        </div>
+    </div>
+
+    <!-- Display users that the logged-in user is following -->
+    @if($followingUsers->count())
+        <h2 class="mb-4">You Are Following</h2>
+        <div class="row">
+            @foreach($followingUsers as $followingUser)
+                <div class="col-md-4 mb-4">
+                    <a href="{{ route('user.profile', $followingUser->id) }}" class="text-decoration-none">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                @if($followingUser->biodata && $followingUser->biodata->photo)
+                                    <img src="{{ asset('storage/' . $followingUser->biodata->photo) }}" alt="User Photo" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                                @else
+                                    <img src="https://via.placeholder.com/100" alt="Default Photo" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                                @endif
+                                <h5 class="card-title mt-2">{{ $followingUser->name }}</h5>
+                                <p class="card-text"><strong>Email:</strong> {{ $followingUser->email }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            @endforeach
         </div>
     @else
-        <p>No biodata available. <a href="{{ route('biodata.create') }}">Create now</a>.</p>
+        <p>You are not following anyone yet.</p>
     @endif
+
 </div>
 @endsection

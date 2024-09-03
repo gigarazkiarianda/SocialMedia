@@ -16,6 +16,12 @@
             </form>
             <ul class="navbar-nav ml-auto">
                 @auth
+                    <!-- Profile Button -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('user.myprofile') }}">Profile</a>
+                    </li>
+
+                    <!-- Logout Button -->
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('logout') }}"
                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
