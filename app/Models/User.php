@@ -39,4 +39,8 @@ public function followers()
     {
         return $this->hasMany(Notification::class);
     }
+    public function getProfilePhotoUrlAttribute()
+    {
+        return $this->profile_photo_url ?? asset('storage/default-profile-photo.jpg');
+    }
 }

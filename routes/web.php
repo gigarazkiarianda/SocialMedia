@@ -4,8 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\FollowController;
-use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ChatRoomController;
+use App\Http\Controllers\MessageController;
+
+
 
 
 
@@ -51,11 +53,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/user/{id}/followers', [UserController::class, 'followers'])->name('user.followers');
     Route::get('/user/{id}/following', [UserController::class, 'following'])->name('user.following');
 
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-Route::post('/follow', [NotificationController::class, 'follow'])->name('notifications.follow');
-Route::post('/unfollow', [NotificationController::class, 'unfollow'])->name('notifications.unfollow');
+    Route::get('/chat', [ChatRoomController::class, 'index'])->name('chat.index');
+Route::post('/chat/store', [ChatRoomController::class, 'store'])->name('chat.store');
+Route::get('/chat/{id}', [ChatRoomController::class, 'show'])->name('chat.show');
+
+Route::post('/chat/{chatRoomId}/message', [MessageController::class, 'store'])->name('message.store');
 });
-
-
-
-
