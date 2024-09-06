@@ -53,4 +53,20 @@
         @endforeach
     </ul>
 </div>
+
+ <!-- Bottom Navigation Bar -->
+ <div class="bottom-nav">
+    <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+        <i class="fas fa-home"></i>
+    </a>
+    <a href="{{ route('chat.index') }}" class="{{ request()->routeIs('chat.index') ? 'active' : '' }}">
+        <i class="fas fa-comments"></i>
+    </a>
+    <a href="{{ route('post.create') }}" class="{{ request()->routeIs('post.create') ? 'active' : '' }}">
+        <i class="fas fa-plus"></i>
+    </a>
+    <a href="{{ route('user.myprofile') }}" class="{{ request()->routeIs('user.myprofile') ? 'active' : '' }}">
+        <i class="fas fa-user"></i>
+    </a>
+</div>
 @endsection

@@ -28,11 +28,12 @@ class UserController extends Controller
     }
 
     public function myProfile()
-    {
-        $user = Auth::user();
-        $biodata = $user->biodata;
-        return view('user.myprofile', compact('user', 'biodata'));
-    }
+{
+    $user = Auth::user();
+    $biodata = $user->biodata;
+    $posts = $user->posts; // Ambil postingan dari pengguna yang sedang login
+    return view('user.myprofile', compact('user', 'biodata', 'posts'));
+}
 
     public function follow($userId)
 {
@@ -82,4 +83,11 @@ class UserController extends Controller
     {
         return $this->hasMany(Message::class);
     }
+
+    public function followings()
+    {
+        return $this->hasMany(Follow::class, 'follower_id');
+    }
+
+
 }

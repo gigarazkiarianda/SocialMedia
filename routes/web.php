@@ -6,6 +6,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ChatRoomController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\SettingsController;
+
 
 
 
@@ -40,7 +43,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/biodata/{id}', [DashboardController::class, 'update'])->name('biodata.update');
 
     // User search route
-    Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/search', [UserController::class, 'search'])->name('user.search');
     Route::get('/user/{id}', [UserController::class, 'profile'])->name('user.profile');
     Route::get('/my-profile', [UserController::class, 'myProfile'])->name('user.myprofile');
@@ -58,4 +61,18 @@ Route::post('/chat/store', [ChatRoomController::class, 'store'])->name('chat.sto
 Route::get('/chat/{id}', [ChatRoomController::class, 'show'])->name('chat.show');
 
 Route::post('/chat/{chatRoomId}/message', [MessageController::class, 'store'])->name('message.store');
+
+Route::get('/posts/create', [PostController::class, 'create'])->name('post.create');
+Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
+Route::post('/post/{id}/like', [PostController::class, 'like'])->name('post.like');
+Route::post('/post/{id}/comment', [PostController::class, 'addComment'])->name('post.comment');
+Route::get('/posts/{id}', [PostController::class, 'show'])->name('post.show');
+Route::post('/posts/{id}/comments', [PostController::class, 'addComment'])->name('post.addComment');
+
+Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+
+// Route untuk menangani logout
+Route::post('/logout', [SettingsController::class, 'logout'])->name('logout');
+
 });
+

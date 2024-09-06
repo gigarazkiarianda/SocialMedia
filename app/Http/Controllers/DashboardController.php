@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Biodata;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Post;
+
 
 class DashboardController extends Controller
 {
@@ -16,11 +18,12 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $followingIds = Auth::user()->following()->pluck('following_id');
         $biodata = Biodata::where('user_id', $user->id)->first();
+        $posts = Post::whereIn('user_id', $followingIds)->orWhere('user_id', Auth::id())->latest()->get();
 
-        return view('dashboard', compact('biodata'));
+        return view('dashboard', compact('biodata', 'posts', ));
     }
-
     /**
      * Show the form for creating a new resource.
      *
