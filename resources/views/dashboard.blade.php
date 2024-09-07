@@ -22,16 +22,53 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 @foreach($posts as $post)
-                    <div class="card mb-4">
+                    <div class="card mb-4 position-relative">
                         <div class="card-header d-flex align-items-center">
-                            @if($post->user->biodata && $post->user->biodata->photo)
-                                <img src="{{ asset('storage/' . $post->user->biodata->photo) }}" alt="Foto Pengguna" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
-                            @else
-                                <img src="https://via.placeholder.com/40" alt="Foto Default" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
-                            @endif
-                            <div class="ml-2">
-                                <h6 class="m-0">{{ $post->user->name }}</h6>
-                                <small class="text-muted">{{ $post->created_at->diffForHumans() }}</small>
+                            <div class="d-flex align-items-center flex-grow-1">
+                                @if($post->user->biodata && $post->user->biodata->photo)
+                                    <img src="{{ asset('storage/' . $post->user->biodata->photo) }}" alt="Foto Pengguna" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                @else
+                                    <img src="https://via.placeholder.com/40" alt="Foto Default" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                @endif
+                                <div class="ml-2">
+                                    <h6 class="m-0">{{ $post->user->name }}</h6>
+                                    <small class="text-muted">{{ $post->created_at->diffForHumans() }}</small>
+                                </div>
+                            </div>
+                            <!-- Tombol tiga titik -->
+                            <div class="ml-auto">
+                                <button class="btn btn-link text-dark" type="button" data-toggle="modal" data-target="#postActionsModal{{ $post->id }}">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <!-- Modal untuk tindakan postingan -->
+                                <div class="modal fade" id="postActionsModal{{ $post->id }}" tabindex="-1" role="dialog" aria-labelledby="postActionsModalLabel{{ $post->id }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="postActionsModalLabel{{ $post->id }}">Tindakan Postingan</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                @if($post->user_id == Auth::id())
+                                                    <!-- Jika postingan milik pengguna yang sedang login -->
+                                                    <a href="{{ route('post.edit', $post->id) }}" class="btn btn-primary btn-block">Edit Post</a>
+                                                    <form action="{{ route('post.destroy', $post->id) }}" method="POST" class="d-inline-block w-100">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-block">Hapus Post</button>
+                                                    </form>
+                                                @else
+                                                    <!-- Jika postingan bukan milik pengguna yang sedang login -->
+                                                    <a href="#" class="btn btn-secondary btn-block">Sembunyikan Post</a>
+                                                @endif
+                                                <!-- Tombol Share -->
+                                                <a href="#" class="btn btn-info btn-block">Bagikan Post</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         @if($post->image)
@@ -51,99 +88,96 @@
                                 </div>
                                 <div>
                                     <span>{{ $post->comments->count() }} Komentar</span> <!-- Menampilkan jumlah komentar -->
-                                    <form action="{{ route('post.comment', $post->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-link p-0 text-dark">
-                                            <i class="fas fa-comment"></i>
-                                        </button>
-                                    </form>
                                 </div>
                             </div>
                             <h5 class="card-title">{{ $post->title }}</h5>
                             <p class="card-text">{{ $post->content }}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <form action="{{ route('post.comment', $post->id) }}" method="POST" class="w-100 d-flex">
-                                    @csrf
-                                    <div class="input-group">
-                                        <input type="text" class="form-control comment-input" id="comment" name="comment" placeholder="Tambahkan komentar">
-                                        <div class="input-group-append">
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="fas fa-paper-plane"></i> <!-- Ikon kirim komentar -->
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
 
+                            <!-- Form Input Komentar -->
+                            <form action="{{ route('post.comment', $post->id) }}" method="POST" class="w-100 mb-3">
+                                @csrf
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="comment" placeholder="Tambahkan komentar" required>
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane"></i> Kirim
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- Daftar Komentar dan Balasan -->
                             <div class="mt-3">
                                 @foreach($post->comments as $comment)
-                                    <div class="media mb-2">
+                                    <div class="media mb-3">
                                         @if($comment->user->biodata && $comment->user->biodata->photo)
                                             <img src="{{ asset('storage/' . $comment->user->biodata->photo) }}" alt="Foto Pengguna" class="mr-3 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
                                         @else
                                             <img src="https://via.placeholder.com/40" alt="Foto Default" class="mr-3 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
                                         @endif
                                         <div class="media-body">
-                                            <h6 class="mt-0">{{ $comment->user->name }}</h6>
+                                            <h6 class="mt-0">{{ $comment->user->name }} <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small></h6>
                                             <p>{{ $comment->content }}</p>
+                                            <!-- Tombol Balas -->
+                                            <button class="btn btn-link p-0 text-primary reply-toggle" data-comment-id="{{ $comment->id }}">
+                                                Balas
+                                            </button>
+                                            <!-- Form Balas Komentar -->
+                                            <div class="ml-3 mt-2 reply-form" id="replyForm{{ $comment->id }}" style="display: none;">
+                                                <form action="{{ route('post.reply', ['post_id' => $post->id, 'comment_id' => $comment->id]) }}" method="POST">
+                                                    @csrf
+                                                    <div class="input-group">
+                                                        <input type="text" name="reply_text" class="form-control" placeholder="Tambahkan balasan..." required>
+                                                        <div class="input-group-append">
+                                                            <button type="submit" class="btn btn-primary">Kirim</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <!-- Tampilkan Balasan -->
+                                            <div class="mt-2">
+                                                @foreach($comment->replies as $reply)
+                                                    <div class="media mb-2">
+                                                        @if($reply->user->biodata && $reply->user->biodata->photo)
+                                                            <img src="{{ asset('storage/' . $reply->user->biodata->photo) }}" alt="Foto Pengguna" class="mr-3 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                                        @else
+                                                            <img src="https://via.placeholder.com/40" alt="Foto Default" class="mr-3 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                                        @endif
+                                                        <div class="media-body">
+                                                            <h6 class="mt-0">{{ $reply->user->name }} <small class="text-muted">{{ $reply->created_at->diffForHumans() }}</small></h6>
+                                                            <p>{{ $reply->content }}</p>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
+
                         </div>
                     </div>
                 @endforeach
             </div>
         </div>
     @else
-        <p>Anda belum mengikuti pengguna yang memiliki postingan.</p>
+        <p class="text-center">Belum ada postingan.</p>
     @endif
 </div>
 
-<!-- Bottom Navigation Bar -->
-<div class="bottom-nav">
-    <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-        <i class="fas fa-home"></i>
-    </a>
-    <a href="{{ route('chat.index') }}" class="{{ request()->routeIs('chat.index') ? 'active' : '' }}">
-        <i class="fas fa-comments"></i>
-    </a>
-    <a href="{{ route('post.create') }}" class="{{ request()->routeIs('post.create') ? 'active' : '' }}">
-        <i class="fas fa-plus"></i>
-    </a>
-    <a href="{{ route('user.myprofile') }}" class="{{ request()->routeIs('user.myprofile') ? 'active' : '' }}">
-        <i class="fas fa-user"></i>
-    </a>
-</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.reply-toggle').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var commentId = button.getAttribute('data-comment-id');
+                var replyForm = document.getElementById('replyForm' + commentId);
+                if (replyForm.style.display === 'none' || replyForm.style.display === '') {
+                    replyForm.style.display = 'block';
+                } else {
+                    replyForm.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
 @endsection
-
-@push('styles')
-<style>
-    .comment-input {
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: #fff;
-        border-top: 1px solid #ddd;
-        display: flex;
-        justify-content: space-around;
-        padding: 10px 0;
-    }
-
-    .bottom-nav a {
-        color: #333;
-        text-decoration: none;
-        font-size: 24px;
-    }
-
-    .bottom-nav a.active {
-        color: #007bff;
-    }
-</style>
-@endpush

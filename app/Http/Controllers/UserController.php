@@ -21,7 +21,9 @@ class UserController extends Controller
 
     public function profile($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with(['biodata', 'followers', 'following', 'posts' => function($query) {
+            $query->orderBy('created_at', 'asc');
+        }])->findOrFail($id);
         $biodata = $user->biodata;
 
         return view('user.profile', compact('user', 'biodata'));

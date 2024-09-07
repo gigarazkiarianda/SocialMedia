@@ -51,16 +51,19 @@
     <h2 class="mt-4 mb-3">Postingan Anda</h2>
     <div class="row">
         @forelse($posts as $post)
-            <div class="col-4 mb-4">
-                <div class="card">
-                    <img src="{{ asset('storage/' . $post->image) }}" class="card-img-top" alt="Gambar Postingan">
-                </div>
+            <div class="col-12 col-sm-6 col-md-4 mb-4">
+                <a href="{{ route('post.show', $post->id) }}" class="card-link">
+                    <div class="card">
+                        <img src="{{ asset('storage/' . $post->image) }}" class="card-img-top" alt="Gambar Postingan">
+                    </div>
+                </a>
             </div>
         @empty
             <p class="text-center">Anda belum memiliki postingan.</p>
         @endforelse
     </div>
 </div>
+
 <!-- Bottom Navigation Bar -->
 <div class="bottom-nav">
     <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -81,8 +84,8 @@
 @push('styles')
 <style>
     .card-img-top {
-        height: 150px;
         width: 100%;
+        height: auto;
         object-fit: cover;
         aspect-ratio: 1/1;
     }
@@ -103,6 +106,13 @@
     }
     .bottom-nav a.active {
         color: #007bff;
+    }
+    .card-link {
+        text-decoration: none;
+        color: inherit;
+    }
+    .card-link:hover .card {
+        border-color: #007bff;
     }
 </style>
 @endpush

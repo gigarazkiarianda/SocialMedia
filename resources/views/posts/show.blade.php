@@ -2,9 +2,9 @@
 
 @section('content')
 <div class="container">
-    <div class="card mb-3" style="max-width: 100%; overflow-y: auto;">
+    <div class="card mb-3">
         @if($post->image)
-            <img src="{{ asset('storage/' . $post->image) }}" class="card-img-top" alt="Gambar Post" style="object-fit: contain;">
+            <img src="{{ asset('storage/' . $post->image) }}" class="card-img-top" alt="Gambar Post">
         @endif
         <div class="card-body">
             <h5 class="card-title">{{ $post->title }}</h5>
@@ -13,30 +13,41 @@
             <!-- Tampilkan komentar -->
             <h6 class="mt-3">Komentar:</h6>
             @foreach($post->comments as $comment)
-                <div class="media mb-2">
-                    <img src="{{ $comment->user->biodata && $comment->user->biodata->photo ? asset('storage/' . $comment->user->biodata->photo) : 'https://via.placeholder.com/30' }}" class="mr-3 rounded-circle" style="width: 30px; height: 30px; object-fit: cover;" alt="Foto Pengguna">
-                    <div class="media-body">
-                        <h6 class="mt-0">{{ $comment->user->name }}</h6>
-                        <p>{{ $comment->content }}</p>
+                <div class="comment mb-3">
+                    <div class="d-flex align-items-start">
+                        <img src="{{ $comment->user->biodata && $comment->user->biodata->photo ? asset('storage/' . $comment->user->biodata->photo) : 'https://via.placeholder.com/50' }}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;" alt="Foto Pengguna">
+                        <div class="ml-3">
+                            <h6 class="font-weight-bold">{{ $comment->user->name }}</h6>
+                            <p>{{ $comment->content }}</p>
+
+                            <!-- Tampilkan balasan komentar -->
+                            @foreach($comment->replies as $reply)
+                                <div class="reply ml-4">
+                                    <strong>{{ $reply->user->name }}</strong>
+                                    <p>{{ $reply->content }}</p>
+                                </div>
+                            @endforeach
+
+                            <!-- Formulir balasan komentar -->
+                            <form action="{{ route('post.reply', ['post_id' => $post->id, 'comment_id' => $comment->id]) }}" method="POST">
+                                @csrf
+                                <div class="input-group mt-2">
+                                    <input type="text" name="reply_text" placeholder="Balas komentar ini..." class="form-control" required>
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-primary">Balas</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             @endforeach
-
-            <!-- Formulir komentar -->
-            <form action="{{ route('post.addComment', $post->id) }}" method="POST">
-                @csrf
-                <div class="form-group">
-                    <label for="comment">Tambahkan Komentar:</label>
-                    <textarea class="form-control" id="comment" name="comment" rows="2" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Kirim Komentar</button>
-            </form>
         </div>
     </div>
 </div>
 
- <!-- Bottom Navigation Bar -->
- <div class="bottom-nav">
+<!-- Bottom Navigation Bar -->
+<div class="bottom-nav">
     <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
         <i class="fas fa-home"></i>
     </a>
@@ -54,31 +65,47 @@
 
 @push('styles')
 <style>
-    .card-body {
-        max-height: 300px; /* Tinggi kartu disesuaikan lebih kecil */
-        overflow-y: auto; /* Aktifkan scroll vertikal */
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
     .card-img-top {
-        max-width: 100%; /* Menjaga lebar gambar tetap dalam batas kartu */
-        max-height: 150px; /* Sesuaikan tinggi gambar lebih kecil */
-        object-fit: contain; /* Menjaga rasio aspek gambar */
+        max-width: 100%;
+        height: auto;
+        object-fit: cover;
     }
-    .media-body {
+    .card-body {
+        padding: 16px;
+    }
+    .comment {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+    .reply {
+        border-bottom: 1px solid #f1f1f1;
+        padding-bottom: 5px;
+    }
+    .input-group {
+        margin-top: 10px;
+    }
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #fff;
+        border-top: 1px solid #ddd;
         display: flex;
-        flex-direction: column;
-        justify-content: center;
+        justify-content: space-around;
+        padding: 10px 0;
     }
-    .card-title {
-        font-size: 1rem; /* Ukuran teks judul lebih kecil */
+    .bottom-nav a {
+        color: #333;
+        font-size: 20px;
     }
-    .card-text {
-        font-size: 0.85rem; /* Ukuran teks konten lebih kecil */
-    }
-    .form-control {
-        font-size: 0.8rem; /* Ukuran teks area komentar lebih kecil */
-    }
-    button.btn {
-        font-size: 0.8rem; /* Ukuran teks tombol lebih kecil */
+    .bottom-nav a.active {
+        color: #007bff;
     }
 </style>
 @endpush

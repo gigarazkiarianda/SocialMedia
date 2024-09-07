@@ -1,0 +1,95 @@
+/* CSS untuk Formulir Balasan Komentar */
+.comment-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    z-index: 1000; /* Menjamin navbar berada di atas konten lain */
+}
+
+.bottom-nav a {
+    color: #333;
+    text-decoration: none;
+    font-size: 1.5rem;
+}
+
+.bottom-nav a.active {
+    color: #007bff;
+}
+
+.bottom-nav i {
+    font-size: 1.2rem;
+}
+
+.post-options .dropdown-menu {
+    min-width: 160px;
+}
+
+.reply-form {
+    display: none; /* Mulai dengan form tersembunyi */
+    margin-top: 10px;
+}
+
+.reply-form form {
+    display: flex;
+    align-items: center; /* Memastikan form dan tombol sejajar secara vertikal */
+}
+
+.reply-form input {
+    border-radius: 0.25rem;
+    flex: 1; /* Membuat input menggunakan ruang yang tersedia */
+    padding: 10px; /* Memberi jarak di dalam input */
+    border: 1px solid #ddd;
+    font-size: 1rem; /* Ukuran font input */
+}
+
+.reply-form button {
+    border-radius: 0.25rem;
+    margin-left: 10px; /* Memberi jarak antara input dan tombol */
+}
+
+.card-img-top {
+    object-fit: cover;
+    height: 300px; /* Tinggi gambar default */
+}
+
+/* Responsif untuk ukuran layar lebih kecil */
+@media (max-width: 768px) {
+    .bottom-nav {
+        padding: 8px 0;
+    }
+
+    .bottom-nav a {
+        font-size: 1.2rem;
+    }
+
+    .bottom-nav i {
+        font-size: 1rem;
+    }
+
+    .card-img-top {
+        height: 200px; /* Mengurangi tinggi gambar untuk layar lebih kecil */
+    }
+}
+
+/* Responsif untuk ukuran layar ekstra kecil */
+@media (max-width: 576px) {
+    .reply-form input {
+        font-size: 0.875rem; /* Mengurangi ukuran font input untuk layar lebih kecil */
+        padding: 8px; /* Mengurangi padding di dalam input */
+    }
+
+    .reply-form button {
+        font-size: 0.875rem; /* Mengurangi ukuran font tombol untuk layar lebih kecil */
+    }
+}
