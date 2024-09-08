@@ -2,10 +2,10 @@
 
 @section('content')
 <div class="container">
-    <h1>Search Results for "{{ $query }}"</h1>
+    <h1>Hasil Pencarian untuk "{{ $query }}"</h1>
 
     @if($users->isEmpty())
-        <p>No users found.</p>
+        <p>Tidak ada pengguna ditemukan.</p>
     @else
         <ul class="list-group">
             @foreach($users as $user)
@@ -17,8 +17,8 @@
     @endif
 </div>
 
- <!-- Bottom Navigation Bar -->
- <div class="bottom-nav">
+<!-- Bottom Navigation Bar -->
+<div class="bottom-nav">
     <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
         <i class="fas fa-home"></i>
     </a>

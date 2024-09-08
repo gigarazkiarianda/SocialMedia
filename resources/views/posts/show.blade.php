@@ -10,28 +10,33 @@
             <h5 class="card-title">{{ $post->title }}</h5>
             <p class="card-text">{{ $post->content }}</p>
 
-            <!-- Tampilkan komentar -->
             <h6 class="mt-3">Komentar:</h6>
             @foreach($post->comments as $comment)
-                <div class="comment mb-3">
+                <div class="comment mb-4">
                     <div class="d-flex align-items-start">
                         <img src="{{ $comment->user->biodata && $comment->user->biodata->photo ? asset('storage/' . $comment->user->biodata->photo) : 'https://via.placeholder.com/50' }}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;" alt="Foto Pengguna">
                         <div class="ml-3">
-                            <h6 class="font-weight-bold">{{ $comment->user->name }}</h6>
-                            <p>{{ $comment->content }}</p>
+                            <h6 class="font-weight-bold mb-1">{{ $comment->user->name }}</h6>
+                            <p class="mb-1">{{ $comment->content }}</p>
+                            <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small>
 
-                            <!-- Tampilkan balasan komentar -->
                             @foreach($comment->replies as $reply)
-                                <div class="reply ml-4">
-                                    <strong>{{ $reply->user->name }}</strong>
-                                    <p>{{ $reply->content }}</p>
+                                <div class="reply mt-3">
+                                    <div class="d-flex align-items-start">
+                                        <img src="{{ $reply->user->biodata && $reply->user->biodata->photo ? asset('storage/' . $reply->user->biodata->photo) : 'https://via.placeholder.com/50' }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Foto Pengguna">
+                                        <div class="ml-2">
+                                            <strong class="d-block mb-1">{{ $reply->user->name }}</strong>
+                                            <p class="mb-1">{{ $reply->content }}</p>
+                                            <small class="text-muted">{{ $reply->created_at->diffForHumans() }}</small>
+                                        </div>
+                                    </div>
                                 </div>
                             @endforeach
 
-                            <!-- Formulir balasan komentar -->
-                            <form action="{{ route('post.reply', ['post_id' => $post->id, 'comment_id' => $comment->id]) }}" method="POST">
+                            <button class="btn btn-link mt-3 toggle-reply-form" data-comment-id="{{ $comment->id }}">Balas</button>
+                            <form action="{{ route('post.reply', ['post_id' => $post->id, 'comment_id' => $comment->id]) }}" method="POST" class="reply-form mt-2" id="reply-form-{{ $comment->id }}">
                                 @csrf
-                                <div class="input-group mt-2">
+                                <div class="input-group">
                                     <input type="text" name="reply_text" placeholder="Balas komentar ini..." class="form-control" required>
                                     <div class="input-group-append">
                                         <button type="submit" class="btn btn-primary">Balas</button>
@@ -107,5 +112,23 @@
     .bottom-nav a.active {
         color: #007bff;
     }
+    .reply-form {
+        display: none;
+    }
+    .reply-form.active {
+        display: block;
+    }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.toggle-reply-form').forEach(button => {
+            button.addEventListener('click', function () {
+                const commentId = this.getAttribute('data-comment-id');
+                const replyForm = document.getElementById(`reply-form-${commentId}`);
+                replyForm.classList.toggle('active');
+            });
+        });
+    });
+</script>
 @endpush

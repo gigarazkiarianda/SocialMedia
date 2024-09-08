@@ -9,6 +9,8 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ReplyCommentController;
+use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\Auth\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,8 +47,8 @@ Route::middleware(['auth'])->group(function () {
     // Rute pengguna
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/search', [UserController::class, 'search'])->name('user.search');
-    Route::get('/user/{id}', [UserController::class, 'profile'])->name('user.profile');
-    Route::get('/my-profile', [UserController::class, 'myProfile'])->name('user.myprofile');
+    Route::get('/user/profile/{id}', [UserController::class, 'profile'])->name('user.profile');
+    Route::get('/myprofile', [UserController::class, 'myProfile'])->name('user.myprofile');
     Route::post('/follow/{id}', [UserController::class, 'follow'])->name('user.follow');
     Route::post('/unfollow/{id}', [UserController::class, 'unfollow'])->name('user.unfollow');
     Route::get('/user/{id}/followers', [UserController::class, 'followers'])->name('user.followers');
@@ -57,14 +59,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/chat/store', [ChatRoomController::class, 'store'])->name('chat.store');
     Route::get('/chat/{id}', [ChatRoomController::class, 'show'])->name('chat.show');
     Route::post('/chat/{chatRoomId}/message', [MessageController::class, 'store'])->name('message.store');
+    Route::get('/chat/create/{user_id}', [ChatRoomController::class, 'create'])->name('chat.create');
 
     // Rute postingan
     Route::get('/posts/create', [PostController::class, 'create'])->name('post.create');
     Route::post('/posts', [PostController::class, 'store'])->name('post.store'); // Perbarui rute ini agar sesuai
     Route::post('/posts/{id}/like', [PostController::class, 'like'])->name('post.like');
     Route::post('/posts/{id}/comment', [PostController::class, 'addComment'])->name('post.comment');
-    Route::get('/posts/{id}', [PostController::class, 'show'])->name('post.show');
+    Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
+    Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
+    Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
     Route::post('/posts/{id}/reply', [PostController::class, 'reply'])->name('post.reply');
+
+
 
     // Rute pengaturan
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
@@ -73,6 +80,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/comments/reply', [ReplyCommentController::class, 'store'])->name('reply-comments.store');
 
     Route::post('posts/{post_id}/reply/{comment_id}', [PostController::class, 'reply'])->name('post.reply');
+
+    Route::get('/settings/change-password', [PasswordController::class, 'showChangePasswordForm'])->name('password.change');
+    Route::post('/settings/change-password', [PasswordController::class, 'updatePassword'])->name('password.update');
+
+    Route::get('/profile', [UserController::class, 'showProfile'])->name('profile.show');
+    Route::get('/user/{id}', [UserController::class, 'showUserProfile'])->name('user.profile.show');
 });
 
 // Rute untuk mengedit, memperbarui, dan menghapus postingan (periksa rute jika terdapat rute duplikat)

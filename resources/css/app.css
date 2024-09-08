@@ -1,0 +1,22 @@
+.position-relative {
+    position: relative;
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background-color: #f00; /* Default offline color */
+}
+
+.status-indicator.online {
+    background-color: #0f0; /* Online color */
+}
+
+.status-indicator.offline {
+    background-color: #f00; /* Offline color */
+}

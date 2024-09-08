@@ -1,5 +1,7 @@
 <?php
 
+// app/Models/User.php
+
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -13,7 +15,7 @@ class User extends Authenticatable
 
     // Fillable fields
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'is_online', // Tambahkan 'is_online' ke fillable
     ];
 
     // Hidden fields
@@ -27,25 +29,20 @@ class User extends Authenticatable
         return $this->hasOne(Biodata::class);
     }
 
-
-
-
-public function isFollowing($userId)
-{
-    return $this->following()->where('following_id', $userId)->exists();
-}
-
-public function following()
+    public function isFollowing($userId)
     {
-        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id');
-        return $this->hasMany(Follow::class, 'follower_id');
+        return $this->following()->where('following_id', $userId)->exists();
     }
 
-public function followers()
-{
-    return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id');
-    return $this->hasMany(Follow::class, 'following_id');
-}
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id');
+    }
+
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id');
+    }
 
     public function getProfilePhotoUrlAttribute()
     {
@@ -62,10 +59,19 @@ public function followers()
         return $this->hasMany(Post::class);
     }
 
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $users = User::where('name', 'like', "%$query%")->get(['name', 'profile_photo_url']); // Ambil hanya nama dan foto profil
 
+        return response()->json([
+            'data' => $users
+        ]);
+    }
 
-
-
-
-
+    // Aksesori untuk menentukan apakah pengguna online
+    public function getIsOnlineAttribute()
+    {
+        return $this->attributes['is_online'];
+    }
 }

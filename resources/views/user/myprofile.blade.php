@@ -52,7 +52,7 @@
     <div class="row">
         @forelse($posts as $post)
             <div class="col-12 col-sm-6 col-md-4 mb-4">
-                <a href="{{ route('post.show', $post->id) }}" class="card-link">
+                <a href="{{ route('posts.show', $post->id) }}" class="card-link">
                     <div class="card">
                         <img src="{{ asset('storage/' . $post->image) }}" class="card-img-top" alt="Gambar Postingan">
                     </div>

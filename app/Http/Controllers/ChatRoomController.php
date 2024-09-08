@@ -75,4 +75,10 @@ class ChatRoomController extends Controller
 
         return view('chat.show', compact('chatRoom', 'messages'));
     }
+
+    public function create($user_id)
+    {
+
+        return view('chat.create', compact('user_id'));
+    }
 }

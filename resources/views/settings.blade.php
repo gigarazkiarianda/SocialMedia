@@ -9,7 +9,7 @@
 
                 <div class="card-body">
                     <!-- Tombol Ganti Password -->
-                    <a href="#" class="btn btn-outline-primary w-100 d-flex align-items-center">
+                    <a href="{{ route('password.change') }}" class="btn btn-outline-primary w-100 d-flex align-items-center">
                         <i class="bi bi-lock" style="font-size: 1.5rem; margin-right: 10px;"></i>
                         Ganti Password
                     </a>

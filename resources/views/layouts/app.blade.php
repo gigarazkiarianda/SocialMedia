@@ -63,6 +63,39 @@
             color: #0056b3;
             font-weight: bold;
         }
+
+        /* Dropdown pencarian */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            z-index: 1000;
+            display: none; /* Sembunyikan secara default */
+        }
+
+        .search-results .result-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .search-results .result-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-results .result-item img {
+            border-radius: 50%;
+            margin-right: 10px;
+            width: 40px;
+            height: 40px;
+        }
     </style>
 </head>
 <body>
@@ -72,8 +105,9 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <form class="form-inline my-2 my-lg-0 ml-auto" method="GET" action="{{ route('user.search') }}">
-                <input class="form-control mr-sm-2" type="search" name="query" placeholder="Cari pengguna" aria-label="Cari">
+            <form class="form-inline my-2 my-lg-0 ml-auto position-relative" method="GET" action="{{ route('user.search') }}">
+                <input class="form-control mr-sm-2" type="search" id="search" name="query" placeholder="Cari pengguna" aria-label="Cari">
+                <div id="search-results" class="search-results"></div>
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Cari</button>
             </form>
             <ul class="navbar-nav ml-auto">
@@ -84,7 +118,6 @@
                             <i class="fas fa-cog"></i>
                         </a>
                     </li>
-
                 @else
                     <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Login</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('register') }}">Daftar</a></li>
@@ -117,7 +150,45 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        // Tambahkan skrip kustom di sini jika diperlukan
+        $(document).ready(function() {
+            $('#search').on('input', function() {
+                const query = $(this).val();
+                if (query.length >= 2) { // Cek panjang query minimal 2 karakter
+                    $.ajax({
+                        url: '{{ route('user.search') }}',
+                        type: 'GET',
+                        data: { query: query },
+                        success: function(response) {
+                            let results = '';
+                            if (response.data && response.data.length > 0) {
+                                response.data.forEach(user => {
+                                    results += `
+                                        <div class="result-item">
+                                            <img src="${user.profile_photo_url}" alt="${user.name}">
+                                            <span>${user.name}</span>
+                                        </div>
+                                    `;
+                                });
+                                $('#search-results').html(results).show();
+                            } else {
+                                $('#search-results').html('<div class="result-item">Tidak ada hasil ditemukan</div>').show();
+                            }
+                        },
+                        error: function() {
+                            $('#search-results').html('<div class="result-item">Terjadi kesalahan</div>').show();
+                        }
+                    });
+                } else {
+                    $('#search-results').empty().hide();
+                }
+            });
+
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#search, #search-results').length) {
+                    $('#search-results').empty().hide();
+                }
+            });
+        });
     </script>
 </body>
 </html>

@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\UserFollowed;
+use App\Models\Message; // Pastikan Anda memiliki model Message
+use App\Models\Follow; // Pastikan Anda memiliki model Follow
 
 class UserController extends Controller
 {
@@ -30,27 +32,27 @@ class UserController extends Controller
     }
 
     public function myProfile()
-{
-    $user = Auth::user();
-    $biodata = $user->biodata;
-    $posts = $user->posts; // Ambil postingan dari pengguna yang sedang login
-    return view('user.myprofile', compact('user', 'biodata', 'posts'));
-}
-
-    public function follow($userId)
-{
-    $userToFollow = User::findOrFail($userId); // Find the user to follow
-    $currentUser = auth()->user(); // Get the currently authenticated user
-
-    // Check if the current user is not already following the user
-    if (!$currentUser->following->contains($userToFollow)) {
-        $currentUser->following()->attach($userId); // Follow the user
-
-        // Optionally, handle any additional logic here (e.g., logging, analytics)
+    {
+        $user = Auth::user();
+        $biodata = $user->biodata;
+        $posts = $user->posts; // Ambil postingan dari pengguna yang sedang login
+        return view('user.myprofile', compact('user', 'biodata', 'posts'));
     }
 
-    return redirect()->back(); // Redirect back to the previous page
-}
+    public function follow($userId)
+    {
+        $userToFollow = User::findOrFail($userId); // Temukan pengguna yang akan diikuti
+        $currentUser = auth()->user(); // Ambil pengguna yang sedang login
+
+        // Periksa jika pengguna saat ini belum mengikuti pengguna tersebut
+        if (!$currentUser->following->contains($userToFollow)) {
+            $currentUser->following()->attach($userId); // Ikuti pengguna
+
+            // Opsional, tangani logika tambahan di sini (misalnya, logging, analitik)
+        }
+
+        return redirect()->back(); // Kembali ke halaman sebelumnya
+    }
 
     public function unfollow($id)
     {
@@ -81,6 +83,7 @@ class UserController extends Controller
         $following = $user->following;
         return view('user.following', compact('user', 'following'));
     }
+
     public function sentMessages()
     {
         return $this->hasMany(Message::class);
@@ -91,5 +94,15 @@ class UserController extends Controller
         return $this->hasMany(Follow::class, 'follower_id');
     }
 
+    public function show($id)
+    {
+        $user = User::with('biodata', 'followers', 'following', 'posts')->findOrFail($id);
+        return view('profile.show', compact('user'));
+    }
 
+    public function showUserProfile($id)
+    {
+        $user = User::findOrFail($id); // Ambil pengguna berdasarkan ID
+        return view('profile.show', compact('user')); // Tampilkan view profil
+    }
 }

@@ -4,8 +4,20 @@
 <div class="container">
     <div class="d-flex align-items-center mb-4">
         @php
+            // Menentukan pengguna lain dalam chat room
             $otherUser = $chatRoom->user1->id === Auth::id() ? $chatRoom->user2 : $chatRoom->user1;
+
+            // Mengambil waktu saat ini
+            $currentTime = now();
+
+            // Mengambil waktu terakhir dilihat, jika ada
+            $lastSeen = $otherUser->last_seen ? \Carbon\Carbon::parse($otherUser->last_seen) : null;
+
+            // Menghitung selisih waktu dalam menit antara waktu sekarang dengan waktu terakhir dilihat
+            $onlineStatus = $lastSeen ? $lastSeen->diffInMinutes($currentTime) : null;
         @endphp
+
+        <!-- Tampilkan foto profil atau gambar default -->
         @if($otherUser->biodata && $otherUser->biodata->photo)
             <img src="{{ asset('storage/' . $otherUser->biodata->photo) }}" alt="Foto Profil" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
         @else
@@ -14,6 +26,16 @@
 
         <div class="ml-3">
             <h3>{{ $otherUser->name }}</h3>
+            <!-- Tampilkan status online atau last seen -->
+            @if($lastSeen)
+                @if($onlineStatus < 1)
+                    <p>Status: <span class="text-success">Online</span></p>
+                @else
+                    <p>Status: <span class="text-muted">Terakhir dilihat {{ $lastSeen->diffForHumans() }}</span></p>
+                @endif
+            @else
+                <p>Status: <span class="text-muted">Tidak diketahui</span></p>
+            @endif
         </div>
     </div>
 
@@ -78,7 +100,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function(){
-        // Auto scroll to the bottom of the chat messages
+        // Auto scroll ke bawah chat messages
         const chatMessages = $('.chat-messages');
         chatMessages.scrollTop(chatMessages[0].scrollHeight);
     });
