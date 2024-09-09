@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\UserFollowed;
+use App\Models\Notification;
 use App\Models\Message; // Pastikan Anda memiliki model Message
 use App\Models\Follow; // Pastikan Anda memiliki model Follow
 
@@ -40,19 +41,32 @@ class UserController extends Controller
     }
 
     public function follow($userId)
-    {
-        $userToFollow = User::findOrFail($userId); // Temukan pengguna yang akan diikuti
-        $currentUser = auth()->user(); // Ambil pengguna yang sedang login
+{
+    $userToFollow = User::findOrFail($userId); // Temukan pengguna yang akan diikuti
+    $currentUser = auth()->user(); // Ambil pengguna yang sedang login
 
-        // Periksa jika pengguna saat ini belum mengikuti pengguna tersebut
-        if (!$currentUser->following->contains($userToFollow)) {
-            $currentUser->following()->attach($userId); // Ikuti pengguna
+    // Periksa jika pengguna saat ini belum mengikuti pengguna tersebut
+    if (!$currentUser->following->contains($userToFollow)) {
+        $currentUser->following()->attach($userId); // Ikuti pengguna
 
-            // Opsional, tangani logika tambahan di sini (misalnya, logging, analitik)
-        }
+        // Menambahkan notifikasi
+        Notification::create([
+            'user_id' => $userToFollow->id, // Pengguna yang diikuti akan menerima notifikasi
+            'type' => 'follow', // Jenis notifikasi
+            'data' => [
+                'user_name' => $currentUser->name, // Nama pengguna yang mengikuti
+                'follower_id' => $currentUser->id, // ID pengguna yang mengikuti
+            ],
+            'read' => false, // Notifikasi belum dibaca
+            'notifiable_type' => 'App\Models\User', // Sesuaikan dengan model yang relevan
+            'notifiable_id' => $userToFollow->id, // ID pengguna yang diikuti
+        ]);
 
-        return redirect()->back(); // Kembali ke halaman sebelumnya
+        // Opsional, tangani logika tambahan di sini (misalnya, logging, analitik)
     }
+
+    return redirect()->back(); // Kembali ke halaman sebelumnya
+}
 
     public function unfollow($id)
     {

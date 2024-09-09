@@ -17,13 +17,30 @@ class MessageController extends Controller
 
         $chatRoom = ChatRoom::findOrFail($chatRoomId);
 
+        // Simpan pesan baru
         $message = Message::create([
             'chat_room_id' => $chatRoom->id,
             'sender_id' => Auth::id(),
-            'message' => $request->input('message'),
+            'message' => $request->message,
+            'seen' => false,
+            'seen_by_recipient' => false, // Pesan belum dibaca
         ]);
 
-        return redirect()->route('chat.show', $chatRoom->id);
+        // Broadcast event jika perlu
+        // event(new MessageSent($message));
+
+        return redirect()->back();
+    }
+
+    public function show($chatRoomId)
+    {
+        $chatRoom = ChatRoom::findOrFail($chatRoomId);
+
+        // Tandai semua pesan dalam chat room sebagai dibaca oleh penerima
+        $chatRoom->messages()->where('sender_id', '!=', Auth::id())->update([
+            'seen_by_recipient' => true,
+        ]);
+
+        return view('chat.show', compact('chatRoom'));
     }
 }
-

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laravel Auth</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet"> <!-- Font Awesome untuk ikon -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     @stack('styles')
     <style>
         /* Gaya kustom */
@@ -32,6 +32,29 @@
             color: white;
         }
 
+        .notifications-btn {
+            background-color: rgba(255, 0, 0, 0.2); /* Merah transparan */
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            z-index: 1000;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .notifications-btn:hover {
+            background-color: #e60000;
+            text-decoration: none;
+            color: white;
+        }
+
         /* Bottom Navigation Bar */
         .bottom-nav {
             position: fixed;
@@ -44,8 +67,8 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding: 10px 0; /* Padding diturunkan sedikit untuk mengurangi ukuran tombol */
-            border-top: 1px solid #ddd; /* Garis batas atas */
+            padding: 10px 0;
+            border-top: 1px solid #ddd;
         }
 
         .bottom-nav a {
@@ -75,7 +98,7 @@
             background-color: #fff;
             border: 1px solid #ddd;
             z-index: 1000;
-            display: none; /* Sembunyikan secara default */
+            display: none;
         }
 
         .search-results .result-item {
@@ -96,6 +119,17 @@
             width: 40px;
             height: 40px;
         }
+
+        .bottom-nav .badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body>
@@ -112,6 +146,19 @@
             </form>
             <ul class="navbar-nav ml-auto">
                 @auth
+                    <!-- Tombol Notifikasi -->
+                    <li class="nav-item mr-3">
+                        <a class="nav-link notifications-btn" href="{{ route('notifications.index') }}">
+                            <i class="fas fa-bell"></i>
+                            <!-- Badge untuk notifikasi yang belum dibaca -->
+                            @php
+                                $unreadNotificationsCount = $unreadNotificationsCount ?? 0;
+                            @endphp
+                            @if($unreadNotificationsCount > 0)
+                                <span class="badge">{{ $unreadNotificationsCount }}</span>
+                            @endif
+                        </a>
+                    </li>
                     <!-- Tombol Settings -->
                     <li class="nav-item">
                         <a class="nav-link settings-btn" href="{{ route('settings') }}">
@@ -126,7 +173,7 @@
         </div>
     </nav>
 
-    <div class="container mt-5 mb-5"> <!-- Margin bawah ditambahkan untuk jarak -->
+    <div class="container mt-5 mb-5">
         @yield('content')
     </div>
 
@@ -152,41 +199,24 @@
     <script>
         $(document).ready(function() {
             $('#search').on('input', function() {
-                const query = $(this).val();
-                if (query.length >= 2) { // Cek panjang query minimal 2 karakter
+                var query = $(this).val();
+                if (query.length > 0) {
                     $.ajax({
                         url: '{{ route('user.search') }}',
-                        type: 'GET',
+                        method: 'GET',
                         data: { query: query },
-                        success: function(response) {
-                            let results = '';
-                            if (response.data && response.data.length > 0) {
-                                response.data.forEach(user => {
-                                    results += `
-                                        <div class="result-item">
-                                            <img src="${user.profile_photo_url}" alt="${user.name}">
-                                            <span>${user.name}</span>
-                                        </div>
-                                    `;
-                                });
-                                $('#search-results').html(results).show();
-                            } else {
-                                $('#search-results').html('<div class="result-item">Tidak ada hasil ditemukan</div>').show();
-                            }
-                        },
-                        error: function() {
-                            $('#search-results').html('<div class="result-item">Terjadi kesalahan</div>').show();
+                        success: function(data) {
+                            $('#search-results').html(data).show();
                         }
                     });
                 } else {
-                    $('#search-results').empty().hide();
+                    $('#search-results').hide();
                 }
             });
 
-            $(document).on('click', function(e) {
-                if (!$(e.target).closest('#search, #search-results').length) {
-                    $('#search-results').empty().hide();
-                }
+            $(document).on('click', '.search-results .result-item', function() {
+                var userId = $(this).data('id');
+                window.location.href = '/user/' + userId;
             });
         });
     </script>

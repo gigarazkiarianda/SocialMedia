@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\Comment;
 use App\Models\ReplyComment;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use app\Notifications\PostCommented;
+use app\Notifications\CommentReplied;
 
 class PostController extends Controller
 {
@@ -51,28 +54,56 @@ class PostController extends Controller
             $post->likes()->detach($user->id);
         } else {
             $post->likes()->attach($user->id);
+
+            // Menambahkan notifikasi
+            Notification::create([
+                'user_id' => $post->user_id,
+                'type' => 'like',
+                'data' => [
+                    'user_name' => $user->name,
+                    'post_id' => $post->id,
+                ],
+                'read' => false,
+                'notifiable_type' => 'App\Models\User', // Sesuaikan dengan model yang relevan
+                'notifiable_id' => $post->user_id,
+            ]);
         }
 
         return redirect()->back();
     }
 
     public function addComment(Request $request, $id)
-    {
-        $request->validate([
-            'comment' => 'required|string|max:255',
-        ]);
+{
+    $request->validate([
+        'comment' => 'required|string|max:255',
+    ]);
 
-        $post = Post::findOrFail($id);
-        $comment = new Comment();
-        $comment->post_id = $post->id;
-        $comment->user_id = Auth::id();
-        $comment->content = $request->input('comment');
-        $comment->save();
+    $post = Post::findOrFail($id);
+    $comment = new Comment();
+    $comment->post_id = $post->id;
+    $comment->user_id = Auth::id();
+    $comment->content = $request->input('comment');
+    $comment->save();
 
-        return redirect()->back();
-    }
+    // Menambahkan notifikasi
+    Notification::create([
+        'user_id' => $post->user_id,
+        'type' => 'comment',
+        'data' => [
+            'user_name' => Auth::user()->name,
+            'post_id' => $post->id,
+            'comment_id' => $comment->id,
+            'comment_content' => $comment->content,
+        ],
+        'read' => false,
+        'notifiable_type' => 'App\Models\User', // Sesuaikan dengan model yang relevan
+        'notifiable_id' => $post->user_id,
+    ]);
 
-    public function reply(Request $request, $post_id, $comment_id)
+    return redirect()->back();
+}
+
+public function reply(Request $request, $post_id, $comment_id)
 {
     $request->validate([
         'reply_text' => 'required|string|max:255',
@@ -88,17 +119,18 @@ class PostController extends Controller
     $reply->content = $request->input('reply_text');
     $reply->save();
 
+
+
     return redirect()->back()->with('success', 'Balasan berhasil ditambahkan!');
 }
 
-
     public function show($id)
-{
-    $post = Post::with(['user', 'likes', 'comments.replies', 'comments.user', 'comments.replies.user'])
-                ->findOrFail($id);
+    {
+        $post = Post::with(['user', 'likes', 'comments.replies', 'comments.user', 'comments.replies.user'])
+                    ->findOrFail($id);
 
-    return view('posts.show', compact('post'));
-}
+        return view('posts.show', compact('post'));
+    }
 
     public function dashboard()
     {

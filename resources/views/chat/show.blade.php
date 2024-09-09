@@ -43,6 +43,7 @@
     <div class="chat-container" style="position: relative; height: calc(100vh - 160px);">
         <!-- Pesan Chat -->
         <div class="chat-messages" style="height: calc(100% - 50px); overflow-y: auto; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; padding-bottom: 60px;">
+
             @php
                 $lastDisplayedDate = null;
             @endphp
@@ -67,10 +68,24 @@
 
                 <!-- Tampilkan pesan -->
                 <div class="message mb-1 d-flex {{ $message->sender->id === Auth::id() ? 'justify-content-end' : 'justify-content-start' }}" style="margin-bottom: 5px;">
-                    <div class="message-box p-2 rounded {{ $message->sender->id === Auth::id() ? 'bg-primary text-white' : 'bg-secondary text-white' }}" style="max-width: 75%; word-wrap: break-word;">
+                    <div class="message-box p-2 rounded {{ $message->sender->id === Auth::id() ? 'bg-success text-white' : 'bg-dark text-white' }}" style="max-width: 75%; word-wrap: break-word;">
                         <p class="mb-1">{{ $message->message }}</p>
                         <div class="text-center" style="font-size: 0.8em; color: white;">
                             {{ \Carbon\Carbon::parse($message->created_at)->setTimezone('Asia/Jakarta')->format('H:i') }}
+                            @if($message->sender->id === Auth::id())
+                                <small>
+                                    @if($message->seen_by_recipient)
+                                        <!-- Tanda pesan dibaca -->
+                                        <i class="fas fa-check-double text-primary" title="Pesan dibaca"></i>
+                                    @elseif(!$message->seen)
+                                        <!-- Tanda pesan terkirim -->
+                                        <i class="fas fa-check text-muted" title="Pesan terkirim"></i>
+                                    @else
+                                        <!-- Tanda pesan terkirim -->
+                                        <i class="fas fa-check-double text-muted" title="Pesan terkirim"></i>
+                                    @endif
+                                </small>
+                            @endif
                         </div>
                     </div>
                 </div>

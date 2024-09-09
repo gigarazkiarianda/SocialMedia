@@ -1,17 +1,16 @@
 <?php
 
-// app/Models/User.php
-
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, HasFactory;
 
     // Fillable fields
     protected $fillable = [
@@ -74,4 +73,68 @@ class User extends Authenticatable
     {
         return $this->attributes['is_online'];
     }
+
+    public function notifications()
+    {
+        return $this->morphMany(Notification::class, 'notifiable');
+    }
+
+    // Metode untuk menambahkan notifikasi ketika mengikuti
+    public function notifyFollow(User $followedUser)
+    {
+        // Cek apakah pengguna yang mengikuti adalah pengguna yang sama dengan yang diikuti
+        if (Auth::id() !== $followedUser->id) {
+            $notification = new Notification([
+                'user_id' => $followedUser->id,
+                'type' => 'follow',
+                'data' => [
+                    'user_name' => Auth::user()->name,
+                ],
+            ]);
+            $notification->save();
+        }
+    }
+
+    // Metode untuk menambahkan notifikasi ketika menyukai post
+    public function notifyLike(Post $post)
+    {
+        // Cek apakah pengguna yang menyukai adalah pengguna yang sama dengan pemilik post
+        if (Auth::id() !== $post->user_id) {
+            $notification = new Notification([
+                'user_id' => $post->user_id,
+                'type' => 'like',
+                'data' => [
+                    'user_name' => Auth::user()->name,
+                ],
+            ]);
+            $notification->save();
+        }
+    }
+
+    // Metode untuk menambahkan notifikasi ketika mengomentari post
+    public function notifyComment(Comment $comment)
+    {
+        // Cek apakah pengguna yang mengomentari adalah pengguna yang sama dengan pemilik post
+        if (Auth::id() !== $comment->post->user_id) {
+            $notification = new Notification([
+                'user_id' => $comment->post->user_id,
+                'type' => 'comment',
+                'data' => [
+                    'user_name' => Auth::user()->name,
+                    'comment' => $comment->content,
+                ],
+            ]);
+            $notification->save();
+        }
+    }
+
+    public function sentMessages()
+{
+    return $this->hasMany(Message::class);
+}
+
+public function followings()
+{
+    return $this->hasMany(Follow::class, 'follower_id');
+}
 }

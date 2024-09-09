@@ -10,7 +10,8 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ReplyCommentController;
 use App\Http\Controllers\PasswordController;
-use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\NotificationController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -86,6 +87,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [UserController::class, 'showProfile'])->name('profile.show');
     Route::get('/user/{id}', [UserController::class, 'showUserProfile'])->name('user.profile.show');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 });
 
 // Rute untuk mengedit, memperbarui, dan menghapus postingan (periksa rute jika terdapat rute duplikat)

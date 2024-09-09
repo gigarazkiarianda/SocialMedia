@@ -17,12 +17,15 @@ class DashboardController extends Controller
      */
     public function index()
     {
+
+        $unreadNotificationsCount = Auth::user()->unreadNotifications->count();
+
         $user = Auth::user();
         $followingIds = Auth::user()->following()->pluck('following_id');
         $biodata = Biodata::where('user_id', $user->id)->first();
         $posts = Post::whereIn('user_id', $followingIds)->orWhere('user_id', Auth::id())->latest()->get();
 
-        return view('dashboard', compact('biodata', 'posts', ));
+        return view('dashboard', compact('biodata', 'posts', 'unreadNotificationsCount', ));
     }
     /**
      * Show the form for creating a new resource.
