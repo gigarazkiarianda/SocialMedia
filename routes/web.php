@@ -11,7 +11,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ReplyCommentController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\NotificationController;
-
+use App\Http\Controllers\HiddenPostController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,22 +64,23 @@ Route::middleware(['auth'])->group(function () {
 
     // Rute postingan
     Route::get('/posts/create', [PostController::class, 'create'])->name('post.create');
-    Route::post('/posts', [PostController::class, 'store'])->name('post.store'); // Perbarui rute ini agar sesuai
+    Route::post('/posts', [PostController::class, 'store'])->name('post.store');
     Route::post('/posts/{id}/like', [PostController::class, 'like'])->name('post.like');
     Route::post('/posts/{id}/comment', [PostController::class, 'addComment'])->name('post.comment');
     Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
     Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
     Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
-    Route::post('/posts/{id}/reply', [PostController::class, 'reply'])->name('post.reply');
 
-
+    Route::post('/post/{id}/hide', [HiddenPostController::class, 'hide'])->name('post.hide');
+    Route::post('/post/{id}/unhide', [HiddenPostController::class, 'unhide'])->name('post.unhide');
+    Route::delete('/posts/{id}/unhide', [PostController::class, 'unhide'])->name('posts.unhide');
+    Route::get('/hide-post', [HiddenPostController::class, 'index'])->name('hide.posts');
 
     // Rute pengaturan
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
     Route::post('/logout', [SettingsController::class, 'logout'])->name('logout');
 
     Route::post('/comments/reply', [ReplyCommentController::class, 'store'])->name('reply-comments.store');
-
     Route::post('posts/{post_id}/reply/{comment_id}', [PostController::class, 'reply'])->name('post.reply');
 
     Route::get('/settings/change-password', [PasswordController::class, 'showChangePasswordForm'])->name('password.change');
@@ -97,5 +98,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/post/{post}/edit', [PostController::class, 'edit'])->name('post.edit');
     Route::put('/post/{post}', [PostController::class, 'update'])->name('post.update');
     Route::delete('/post/{post}', [PostController::class, 'destroy'])->name('post.destroy');
-
 });

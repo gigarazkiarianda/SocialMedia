@@ -52,7 +52,6 @@
                                             </div>
                                             <div class="modal-body">
                                                 @if($post->user_id == Auth::id())
-                                                    <!-- Jika postingan milik pengguna yang sedang login -->
                                                     <a href="{{ route('post.edit', $post->id) }}" class="btn btn-primary btn-block">Edit Post</a>
                                                     <form action="{{ route('post.destroy', $post->id) }}" method="POST" class="d-inline-block w-100">
                                                         @csrf
@@ -60,9 +59,24 @@
                                                         <button type="submit" class="btn btn-danger btn-block">Hapus Post</button>
                                                     </form>
                                                 @else
-                                                    <!-- Jika postingan bukan milik pengguna yang sedang login -->
-                                                    <a href="#" class="btn btn-secondary btn-block">Sembunyikan Post</a>
+                                                    <!-- Tombol untuk sembunyikan post -->
+                                                    @php
+                                                        $isHidden = \App\Models\HiddenPost::where('user_id', Auth::id())->where('post_id', $post->id)->exists();
+                                                    @endphp
+
+                                                    @if($isHidden)
+                                                        <form action="{{ route('post.unhide', $post->id) }}" method="POST" class="d-inline-block w-100">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-secondary btn-block">Tampilkan Post</button>
+                                                        </form>
+                                                    @else
+                                                        <form action="{{ route('post.hide', $post->id) }}" method="POST" class="d-inline-block w-100">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-secondary btn-block">Sembunyikan Post</button>
+                                                        </form>
+                                                    @endif
                                                 @endif
+
                                                 <!-- Tombol Share -->
                                                 <a href="#" class="btn btn-info btn-block">Bagikan Post</a>
                                             </div>
@@ -116,25 +130,17 @@
                                             <img src="https://via.placeholder.com/40" alt="Foto Default" class="mr-3 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
                                         @endif
                                         <div class="media-body">
-                                            <h6 class="mt-0">{{ $comment->user->name }} <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small></h6>
+                                            <h6 class="mt-0">{{ $comment->user->name }}</h6>
                                             <p>{{ $comment->content }}</p>
-                                            <!-- Tombol Balas -->
-                                            <button class="btn btn-link p-0 text-primary reply-toggle" data-comment-id="{{ $comment->id }}">
-                                                Balas
-                                            </button>
-                                            <!-- Form Balas Komentar -->
-                                            <div class="ml-3 mt-2 reply-form" id="replyForm{{ $comment->id }}" style="display: none;">
-                                                <form action="{{ route('post.reply', ['post_id' => $post->id, 'comment_id' => $comment->id]) }}" method="POST">
-                                                    @csrf
-                                                    <div class="input-group">
-                                                        <input type="text" name="reply_text" class="form-control" placeholder="Tambahkan balasan..." required>
-                                                        <div class="input-group-append">
-                                                            <button type="submit" class="btn btn-primary">Kirim</button>
-                                                        </div>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                            <!-- Tampilkan Balasan -->
+                                            <!-- Form Input Balasan -->
+                                            <form action="{{ route('post.reply', ['post_id' => $post->id, 'comment_id' => $comment->id]) }}" method="POST" class="d-inline-block">
+                                                @csrf
+                                                <input type="text" name="reply" class="form-control mb-2" placeholder="Balas komentar" required>
+                                                <button type="submit" class="btn btn-link p-0">
+                                                    <i class="fas fa-reply"></i> Balas
+                                                </button>
+                                            </form>
+                                            <!-- Daftar Balasan Komentar -->
                                             <div class="mt-2">
                                                 @foreach($comment->replies as $reply)
                                                     <div class="media mb-2">
@@ -144,7 +150,7 @@
                                                             <img src="https://via.placeholder.com/40" alt="Foto Default" class="mr-3 rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
                                                         @endif
                                                         <div class="media-body">
-                                                            <h6 class="mt-0">{{ $reply->user->name }} <small class="text-muted">{{ $reply->created_at->diffForHumans() }}</small></h6>
+                                                            <h6 class="mt-0">{{ $reply->user->name }}</h6>
                                                             <p>{{ $reply->content }}</p>
                                                         </div>
                                                     </div>
@@ -154,30 +160,15 @@
                                     </div>
                                 @endforeach
                             </div>
-
                         </div>
                     </div>
                 @endforeach
             </div>
         </div>
     @else
-        <p class="text-center">Belum ada postingan.</p>
+        <div class="text-center">
+            <p>Tidak ada postingan dari pengguna yang Anda ikuti.</p>
+        </div>
     @endif
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.reply-toggle').forEach(function (button) {
-            button.addEventListener('click', function () {
-                var commentId = button.getAttribute('data-comment-id');
-                var replyForm = document.getElementById('replyForm' + commentId);
-                if (replyForm.style.display === 'none' || replyForm.style.display === '') {
-                    replyForm.style.display = 'block';
-                } else {
-                    replyForm.style.display = 'none';
-                }
-            });
-        });
-    });
-</script>
 @endsection

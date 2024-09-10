@@ -6,11 +6,9 @@ use App\Models\Post;
 use App\Models\Comment;
 use App\Models\ReplyComment;
 use App\Models\Notification;
+use App\Models\HiddenPost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use app\Notifications\PostCommented;
-use app\Notifications\CommentReplied;
 
 class PostController extends Controller
 {
@@ -21,29 +19,35 @@ class PostController extends Controller
 
     public function index()
     {
-        $posts = Post::with(['comments', 'comments.replies'])->get();
+        $user = Auth::user();
+
+        // Ambil semua postingan kecuali yang disembunyikan oleh pengguna saat ini
+        $posts = Post::with(['comments', 'comments.replies'])
+            ->whereDoesntHave('hiddenByUsers', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->latest()
+            ->get();
+
         return view('posts.index', compact('posts'));
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+{
+    $validated = $request->validate([
+        'caption' => 'required|string|max:255',
+        'image' => 'nullable|image|max:2048',
+    ]);
 
-        $path = $request->file('image') ? $request->file('image')->store('images', 'public') : null;
+    $imagePath = $request->file('image') ? $request->file('image')->store('posts', 'public') : null;
 
-        Post::create([
-            'user_id' => Auth::id(),
-            'title' => $request->title,
-            'content' => $request->content,
-            'image' => $path,
-        ]);
+    auth()->user()->posts()->create([
+        'caption' => $validated['caption'],
+        'image' => $imagePath,
+    ]);
 
-        return redirect()->route('dashboard')->with('success', 'Postingan berhasil ditambahkan!');
-    }
+    return redirect()->route('dashboard')->with('success', 'Post created successfully.');
+}
 
     public function like($id)
     {
@@ -73,56 +77,70 @@ class PostController extends Controller
     }
 
     public function addComment(Request $request, $id)
-{
-    $request->validate([
-        'comment' => 'required|string|max:255',
-    ]);
+    {
+        $request->validate([
+            'comment' => 'required|string|max:255',
+        ]);
 
-    $post = Post::findOrFail($id);
-    $comment = new Comment();
-    $comment->post_id = $post->id;
-    $comment->user_id = Auth::id();
-    $comment->content = $request->input('comment');
-    $comment->save();
+        $post = Post::findOrFail($id);
+        $comment = new Comment();
+        $comment->post_id = $post->id;
+        $comment->user_id = Auth::id();
+        $comment->content = $request->input('comment');
+        $comment->save();
 
-    // Menambahkan notifikasi
-    Notification::create([
-        'user_id' => $post->user_id,
-        'type' => 'comment',
-        'data' => [
-            'user_name' => Auth::user()->name,
-            'post_id' => $post->id,
-            'comment_id' => $comment->id,
-            'comment_content' => $comment->content,
-        ],
-        'read' => false,
-        'notifiable_type' => 'App\Models\User', // Sesuaikan dengan model yang relevan
-        'notifiable_id' => $post->user_id,
-    ]);
+        // Menambahkan notifikasi
+        Notification::create([
+            'user_id' => $post->user_id,
+            'type' => 'comment',
+            'data' => [
+                'user_name' => Auth::user()->name,
+                'post_id' => $post->id,
+                'comment_id' => $comment->id,
+                'comment_content' => $comment->content,
+            ],
+            'read' => false,
+            'notifiable_type' => 'App\Models\User', // Sesuaikan dengan model yang relevan
+            'notifiable_id' => $post->user_id,
+        ]);
 
-    return redirect()->back();
-}
+        return redirect()->back();
+    }
 
-public function reply(Request $request, $post_id, $comment_id)
-{
-    $request->validate([
-        'reply_text' => 'required|string|max:255',
-    ]);
+    public function reply(Request $request, $post_id, $comment_id)
+    {
+        $request->validate([
+            'reply_text' => 'required|string|max:255',
+        ]);
 
-    $post = Post::findOrFail($post_id);
-    $comment = Comment::findOrFail($comment_id);
+        $post = Post::findOrFail($post_id);
+        $comment = Comment::findOrFail($comment_id);
 
-    $reply = new ReplyComment();
-    $reply->post_id = $post_id;
-    $reply->user_id = Auth::id();
-    $reply->comment_id = $comment_id;
-    $reply->content = $request->input('reply_text');
-    $reply->save();
+        $reply = new ReplyComment();
+        $reply->post_id = $post_id;
+        $reply->user_id = Auth::id();
+        $reply->comment_id = $comment_id;
+        $reply->content = $request->input('reply_text');
+        $reply->save();
 
+        // Menambahkan notifikasi untuk balasan komentar
+        Notification::create([
+            'user_id' => $comment->user_id,
+            'type' => 'reply',
+            'data' => [
+                'user_name' => Auth::user()->name,
+                'post_id' => $post_id,
+                'comment_id' => $comment_id,
+                'reply_id' => $reply->id,
+                'reply_content' => $reply->content,
+            ],
+            'read' => false,
+            'notifiable_type' => 'App\Models\User', // Sesuaikan dengan model yang relevan
+            'notifiable_id' => $comment->user_id,
+        ]);
 
-
-    return redirect()->back()->with('success', 'Balasan berhasil ditambahkan!');
-}
+        return redirect()->back()->with('success', 'Balasan berhasil ditambahkan!');
+    }
 
     public function show($id)
     {
@@ -170,5 +188,33 @@ public function reply(Request $request, $post_id, $comment_id)
         $post->delete();
 
         return redirect()->route('dashboard')->with('success', 'Postingan berhasil dihapus.');
+    }
+
+    public function hidePost($postId)
+    {
+        $userId = Auth::id();
+
+        // Cek apakah post sudah disembunyikan sebelumnya
+        $hiddenPost = HiddenPost::where('user_id', $userId)->where('post_id', $postId)->first();
+
+        if (!$hiddenPost) {
+            HiddenPost::create([
+                'user_id' => $userId,
+                'post_id' => $postId,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Post telah disembunyikan.');
+    }
+
+    public function unhide($id)
+    {
+        $userId = Auth::id();
+
+        // Hapus postingan dari tabel hidden_post
+        HiddenPost::where('user_id', $userId)->where('post_id', $id)->delete();
+
+        // Redirect kembali ke halaman hide-post
+        return redirect()->route('hide-post')->with('success', 'Postingan telah ditampilkan kembali.');
     }
 }

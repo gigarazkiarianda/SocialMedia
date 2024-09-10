@@ -34,8 +34,13 @@ class Post extends Model
     }
 
     public function followers()
+    {
+        return $this->belongsToMany(User::class, 'post_following', 'post_id', 'follower_id');
+   }
+
+   public function hiddenByUsers()
 {
-    return $this->belongsToMany(User::class, 'post_following', 'post_id', 'follower_id');
+    return $this->belongsToMany(User::class, 'hidden_posts', 'post_id', 'user_id');
 }
 }
 

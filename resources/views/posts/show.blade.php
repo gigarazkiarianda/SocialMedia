@@ -3,10 +3,36 @@
 @section('content')
 <div class="container">
     <div class="card mb-3">
+
+        <!-- Menampilkan foto profil dan nama pengguna dari user yang membuat post -->
+        <div class="d-flex align-items-center mb-3">
+            <img src="{{ $post->user->biodata && $post->user->biodata->photo ? asset('storage/' . $post->user->biodata->photo) : 'https://via.placeholder.com/50' }}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;" alt="Foto Pengguna">
+            <div class="ml-3">
+                <h5 class="mb-0">{{ $post->user->name }}</h5>
+                <small class="text-muted">{{ $post->created_at->diffForHumans() }}</small>
+            </div>
+        </div>
+
         @if($post->image)
             <img src="{{ asset('storage/' . $post->image) }}" class="card-img-top" alt="Gambar Post">
         @endif
         <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <!-- Tombol Like/Unlike dan Komentar -->
+                <div>
+                    <form action="{{ route('post.like', $post->id) }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-link p-0 text-dark">
+                            <i class="fas fa-heart {{ $post->likes->contains(Auth::id()) ? 'text-danger' : 'text-muted' }}"></i>
+                        </button>
+                    </form>
+                    <span>{{ $post->likes->count() }} Suka</span> <!-- Menampilkan jumlah like -->
+                </div>
+                <div>
+                    <span>{{ $post->comments->count() }} Komentar</span> <!-- Menampilkan jumlah komentar -->
+                </div>
+            </div>
+
             <h5 class="card-title">{{ $post->title }}</h5>
             <p class="card-text">{{ $post->content }}</p>
 

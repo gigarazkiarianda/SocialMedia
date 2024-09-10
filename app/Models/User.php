@@ -111,10 +111,10 @@ class User extends Authenticatable
         }
     }
 
-    // Metode untuk menambahkan notifikasi ketika mengomentari post
+
     public function notifyComment(Comment $comment)
     {
-        // Cek apakah pengguna yang mengomentari adalah pengguna yang sama dengan pemilik post
+
         if (Auth::id() !== $comment->post->user_id) {
             $notification = new Notification([
                 'user_id' => $comment->post->user_id,
@@ -137,4 +137,10 @@ public function followings()
 {
     return $this->hasMany(Follow::class, 'follower_id');
 }
+public function hiddenPosts()
+{
+    return $this->belongsToMany(Post::class, 'hidden_posts', 'user_id', 'post_id');
+}
+
+
 }

@@ -6,6 +6,7 @@ use App\Models\Biodata;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Post;
+use App\Models\HiddenPost;
 
 
 class DashboardController extends Controller
@@ -16,17 +17,20 @@ class DashboardController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
+{
+    $user = auth()->user();
 
-        $unreadNotificationsCount = Auth::user()->unreadNotifications->count();
+    // Dapatkan ID post yang di-hide oleh user
+    $hiddenPostIds = $user->hiddenPosts()->pluck('posts.id');
 
-        $user = Auth::user();
-        $followingIds = Auth::user()->following()->pluck('following_id');
-        $biodata = Biodata::where('user_id', $user->id)->first();
-        $posts = Post::whereIn('user_id', $followingIds)->orWhere('user_id', Auth::id())->latest()->get();
+    // Dapatkan post dari user yang diikuti kecuali yang di-hide
+    $posts = Post::whereIn('user_id', $user->following()->pluck('users.id')) // tambahkan 'users.id'
+        ->whereNotIn('id', $hiddenPostIds)
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-        return view('dashboard', compact('biodata', 'posts', 'unreadNotificationsCount', ));
-    }
+    return view('dashboard', compact('posts'));
+}
     /**
      * Show the form for creating a new resource.
      *

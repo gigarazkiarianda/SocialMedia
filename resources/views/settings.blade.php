@@ -14,6 +14,18 @@
                         Ganti Password
                     </a>
 
+                    <!-- Tombol Hide Posting -->
+                    <a href="{{ route('hide.posts') }}" class="btn btn-outline-info w-100 d-flex align-items-center mt-3">
+                        <i class="bi bi-eye-slash" style="font-size: 1.5rem; margin-right: 10px;"></i>
+                        Hide Posting
+                    </a>
+
+                    <!-- Tombol Archive -->
+                    <button class="btn btn-outline-warning w-100 d-flex align-items-center mt-3">
+                        <i class="bi bi-archive" style="font-size: 1.5rem; margin-right: 10px;"></i>
+                        Archive
+                    </button>
+
                     <!-- Tombol Logout -->
                     <form method="POST" action="{{ route('logout') }}" class="mt-3">
                         @csrf
