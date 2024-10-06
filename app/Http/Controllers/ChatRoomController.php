@@ -1,7 +1,5 @@
 <?php
 
-
-
 namespace App\Http\Controllers;
 
 use App\Models\ChatRoom;
@@ -19,14 +17,28 @@ class ChatRoomController extends Controller
      */
     public function index()
     {
-        $chatRooms = ChatRoom::where('user1_id', Auth::id())
-                             ->orWhere('user2_id', Auth::id())
-                             ->get();
+        // Get the authenticated user
+        $authUser = Auth::user();
 
-        $users = User::where('id', '!=', Auth::id())->get();
+        // Get users that the current user is following or are mutual followers
+        $users = User::whereHas('followers', function ($query) use ($authUser) {
+            $query->where('follower_id', $authUser->id);
+        })
+        ->orWhereHas('following', function ($query) use ($authUser) {
+            $query->where('following_id', $authUser->id);
+        })
+        ->where('id', '!=', $authUser->id)
+        ->get();
+
+        // Get all chat rooms involving the authenticated user
+        $chatRooms = ChatRoom::where('user1_id', $authUser->id)
+            ->orWhere('user2_id', $authUser->id)
+            ->with(['messages', 'user1', 'user2'])
+            ->get();
 
         return view('chat.index', compact('chatRooms', 'users'));
     }
+
 
     /**
      * Store a new message in the chat room.
@@ -36,43 +48,28 @@ class ChatRoomController extends Controller
      */
     public function store(Request $request)
     {
+        // Validate the input
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'message' => 'required|string',
         ]);
 
-        $userId = $request->input('user_id');
-        $currentUserId = Auth::id();
+        $authUser = Auth::id();
+        $userId = $request->user_id;
 
-        // Find or create a chat room
-        $chatRoom = ChatRoom::where(function ($query) use ($currentUserId, $userId) {
-            $query->where(function ($query) use ($currentUserId, $userId) {
-                $query->where('user1_id', $currentUserId)
-                      ->where('user2_id', $userId);
-            })->orWhere(function ($query) use ($currentUserId, $userId) {
-                $query->where('user1_id', $userId)
-                      ->where('user2_id', $currentUserId);
-            });
+        // Check if a chat room already exists between these users
+        $chatRoom = ChatRoom::where(function ($query) use ($authUser, $userId) {
+            $query->where('user1_id', $authUser)->where('user2_id', $userId);
+        })->orWhere(function ($query) use ($authUser, $userId) {
+            $query->where('user1_id', $userId)->where('user2_id', $authUser);
         })->first();
 
         if (!$chatRoom) {
+            // Create a new chat room
             $chatRoom = ChatRoom::create([
-                'user1_id' => $currentUserId,
+                'user1_id' => $authUser,
                 'user2_id' => $userId,
             ]);
         }
-
-        // Simpan pesan baru
-        $message = Message::create([
-            'chat_room_id' => $chatRoom->id,
-            'sender_id' => $currentUserId,
-            'message' => $request->message,
-            'seen' => false, // Pesan belum dikirim
-            'seen_by_recipient' => false, // Pesan belum dibaca
-        ]);
-
-        // Broadcast event jika perlu
-        // event(new MessageSent($message));
 
         return redirect()->route('chat.show', $chatRoom->id);
     }
@@ -96,8 +93,36 @@ class ChatRoomController extends Controller
         return view('chat.show', compact('chatRoom', 'messages'));
     }
 
-    public function create($user_id)
+    /**
+     * Create or navigate to an existing chat room.
+     *
+     * @param int $user_id
+     * @return \Illuminate\Http\Response
+     */
+    public function create($user_id = null)
     {
-        return view('chat.create', compact('user_id'));
+        $currentUserId = Auth::id();
+
+        // Cek apakah chat room sudah ada
+        $chatRoom = ChatRoom::where(function ($query) use ($currentUserId, $user_id) {
+            $query->where(function ($query) use ($currentUserId, $user_id) {
+                $query->where('user1_id', $currentUserId)
+                      ->where('user2_id', $user_id);
+            })->orWhere(function ($query) use ($currentUserId, $user_id) {
+                $query->where('user1_id', $user_id)
+                      ->where('user2_id', $currentUserId);
+            });
+        })->first();
+
+        // Jika belum ada, buat chat room baru
+        if (!$chatRoom) {
+            $chatRoom = ChatRoom::create([
+                'user1_id' => $currentUserId,
+                'user2_id' => $user_id,
+            ]);
+        }
+
+        // Arahkan ke halaman chat room
+        return redirect()->route('chat.show', $chatRoom->id);
     }
 }
