@@ -13,7 +13,7 @@ class HiddenPostController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $hiddenPosts = $user->hiddenPosts; // Ambil postingan yang di-hide oleh pengguna
+        $hiddenPosts = $user->hiddenPosts;
 
         return view('hide-post', compact('hiddenPosts'));
     }

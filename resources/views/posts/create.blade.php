@@ -18,16 +18,7 @@
 
         <div class="form-group">
             <label for="image">Gambar</label>
-            <input type="file" class="form-control-file" id="image" name="image" accept="image/*">
-        </div>
-
-        <div class="form-group">
-            <label for="crop-ratio">Rasio Crop</label>
-            <select id="crop-ratio" class="form-control">
-                <option value="1">1:1</option>
-                <option value="16:9">16:9</option>
-                <option value="9:16">9:16</option>
-            </select>
+            <input type="file" class="form-control-file" id="image" name="image" accept="image/*" required>
         </div>
 
         <div class="form-group">
@@ -57,17 +48,14 @@
 
 @push('styles')
 <style>
-    /* Cropper.js style adjustments */
     #image-preview {
-        max-height: 400px; /* Sesuaikan sesuai kebutuhan */
+        max-height: 400px;
     }
 </style>
 @endpush
 
 @push('scripts')
 <script>
-    let cropper;
-
     document.getElementById('image').addEventListener('change', function(event) {
         const file = event.target.files[0];
         if (file) {
@@ -76,22 +64,6 @@
                 const imagePreview = document.getElementById('image-preview');
                 imagePreview.src = e.target.result;
                 imagePreview.style.display = 'block';
-
-                if (cropper) {
-                    cropper.destroy();
-                }
-
-                cropper = new Cropper(imagePreview, {
-                    aspectRatio: 1,
-                    viewMode: 1,
-                    autoCropArea: 1,
-                    responsive: true,
-                });
-
-                document.getElementById('crop-ratio').addEventListener('change', function() {
-                    const ratio = this.value.split(':').map(Number);
-                    cropper.setAspectRatio(ratio[0] / ratio[1]);
-                });
             }
             reader.readAsDataURL(file);
         }
